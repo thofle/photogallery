@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery: {{ gallery_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Gallery: {{ gallery_id }}</h1>
+            <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+        </div>
+        
+        {% if zip_file %}
+        <div class="download-section">
+            <a href="{{ zip_file.url }}" class="download-btn" download="{{ gallery_id }}.zip">
+                📦 Download All Photos (ZIP)
+            </a>
+        </div>
+        {% endif %}
+        
+        {% if images %}
+        <div class="gallery">
+            {% for image in images %}
+            <div class="gallery-item">
+                <a href="{{ image.url }}" target="_blank">
+                    <img src="{{ image.url }}" alt="{{ image.name }}" loading="lazy">
+                </a>
+                <div class="image-info">
+                    <span class="image-name">{{ image.name }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-content">
+            <p>No photos found in this gallery.</p>
+            <p>Please check the gallery ID and try again.</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>
