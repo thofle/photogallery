@@ -103,9 +103,9 @@ def formatted_code(code):
     return code[:4] + "-" + code[4:]
 
 def validate_code(code):
-    if len(code) != 8:
+    if len(code) != 8 and len(code) != 9:
         return False
-    return all(ch.isalnum() for ch in code)
+    return all(ch.isalnum() or ch == '-' for ch in code)
 
 @app.route('/')
 def index():
