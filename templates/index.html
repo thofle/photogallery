@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Gallery - Azure Storage</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/halloween.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 Photo Gallery</h1>
-            <p>Enter a gallery ID to view photos</p>
+            <h1>📸 Fotogalleri</h1>
+            <p>Tast inn kode for å se bilder</p>
         </div>
         
         <div class="search-box">
             <form action="{{ url_for('view_gallery') }}" method="get">
-                <input type="text" name="id" placeholder="Enter Gallery ID" required>
-                <button type="submit">View Gallery</button>
+                <input type="text" name="id" placeholder="kode" required>
+                <button type="submit">Vis bilder</button>
             </form>
         </div>
     </div>

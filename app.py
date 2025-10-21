@@ -19,22 +19,25 @@ STORAGE_ACCOUNT_KEY = os.getenv('AZURE_STORAGE_ACCOUNT_KEY')
 CONNECTION_STRING = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
 CONTAINER_NAME = os.getenv('CONTAINER_NAME', 'photobooth')
 
-
 def get_blob_service_client():
     """Get Azure Blob Service Client"""
     if CONNECTION_STRING:
+        print("Creating BlobServiceClient from connection string")
         return BlobServiceClient.from_connection_string(CONNECTION_STRING)
     elif STORAGE_ACCOUNT_NAME and STORAGE_ACCOUNT_KEY:
+        print("Creating BlobServiceClient from account name and key")
         account_url = f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net"
-        from azure.storage.blob import BlobServiceClient
         return BlobServiceClient(account_url=account_url, credential=STORAGE_ACCOUNT_KEY)
     else:
+        print("Azure Storage credentials not configured")
         raise ValueError("Azure Storage credentials not configured")
 
 
 def get_blob_url_with_sas(blob_name, container_name=CONTAINER_NAME):
     """Generate a SAS URL for a blob"""
+    print(f"Generating SAS URL for blob: {blob_name} in container: {container_name}")
     if not STORAGE_ACCOUNT_NAME or not STORAGE_ACCOUNT_KEY:
+        print("Storage account name or key not configured")
         return None
     
     sas_token = generate_blob_sas(
@@ -45,50 +48,46 @@ def get_blob_url_with_sas(blob_name, container_name=CONTAINER_NAME):
         permission=BlobSasPermissions(read=True),
         expiry=datetime.utcnow() + timedelta(hours=1)
     )
-    
     return f"https://{STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{container_name}/{blob_name}?{sas_token}"
 
 
 def list_blobs_in_folder(gallery_id):
     """List all blobs in the photobooth/<id> folder"""
-    try:
-        blob_service_client = get_blob_service_client()
-        container_client = blob_service_client.get_container_client(CONTAINER_NAME)
-        
-        prefix = f"{gallery_id}/"
-        blobs = []
-        
-        for blob in container_client.list_blobs(name_starts_with=prefix):
-            # Get relative path within the gallery folder
-            relative_name = blob.name[len(prefix):]
-            
-            # Skip the zip file and any subdirectories for the gallery display
-            if relative_name and not '/' in relative_name:
-                # Determine if it's an image or the zip file
-                is_image = any(relative_name.lower().endswith(ext) 
-                             for ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp'])
-                is_zip = relative_name.lower().endswith('.zip')
-                
-                if is_image or is_zip:
-                    blob_info = {
-                        'name': relative_name,
-                        'full_name': blob.name,
-                        'url': get_blob_url_with_sas(blob.name),
-                        'size': blob.size,
-                        'is_image': is_image,
-                        'is_zip': is_zip
-                    }
-                    blobs.append(blob_info)
-        
-        # Separate images and zip file
-        images = [b for b in blobs if b['is_image']]
-        zip_file = next((b for b in blobs if b['is_zip']), None)
-        
-        return images, zip_file
+
+    blob_service_client = get_blob_service_client()
+    container_client = blob_service_client.get_container_client(CONTAINER_NAME)
     
-    except Exception as e:
-        print(f"Error listing blobs: {e}")
-        return [], None
+    prefix = f"{gallery_id}/"
+    blobs = []
+    
+    for blob in container_client.list_blobs(name_starts_with=prefix):
+        # Get relative path within the gallery folder
+        relative_name = blob.name[len(prefix):]
+        print(f"Processing blob: {blob.name}, relative_name: {relative_name}")
+        # Skip the zip file and any subdirectories for the gallery display
+        if relative_name and not '/' in relative_name:
+            # Determine if it's an image or the zip file
+            is_image = relative_name.lower().endswith('.jpg')
+            is_zip = relative_name.lower().endswith('.zip')
+            print(f"Found blob: {relative_name}, is_image: {is_image}, is_zip: {is_zip}")
+            if is_image or is_zip:
+                print(get_blob_url_with_sas(blob.name))
+                blob_info = {
+                    'name': relative_name,
+                    'full_name': blob.name,
+                    'url': get_blob_url_with_sas(blob.name),
+                    'size': blob.size,
+                    'is_image': is_image,
+                    'is_zip': is_zip
+                }
+                blobs.append(blob_info)
+    
+
+    # Separate images and zip file
+    images = [b for b in blobs if b['is_image']]
+    zip_file = next((b for b in blobs if b['is_zip']), None)
+    
+    return images, zip_file
 
 
 @app.route('/')
@@ -103,8 +102,12 @@ def gallery(gallery_id):
     if not gallery_id:
         return redirect(url_for('index'))
     
+    # remove non-alphanumeric characters
+    gallery_id = ''.join(ch for ch in gallery_id if ch.isalnum())
+    gallery_id = gallery_id.lower()
+
     images, zip_file = list_blobs_in_folder(gallery_id)
-    
+
     return render_template('gallery.html', 
                          gallery_id=gallery_id, 
                          images=images, 

@@ -4,19 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery: {{ gallery_id }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/halloween.css') }}">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>📸 Gallery: {{ gallery_id }}</h1>
-            <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+            <h1>📸 Galleri: {{ gallery_id }}</h1>
         </div>
         
         {% if zip_file %}
         <div class="download-section">
             <a href="{{ zip_file.url }}" class="download-btn" download="{{ gallery_id }}.zip">
-                📦 Download All Photos (ZIP)
+                📦 Last ned alle bilder (ZIP)
             </a>
         </div>
         {% endif %}
@@ -28,16 +27,13 @@
                 <a href="{{ image.url }}" target="_blank">
                     <img src="{{ image.url }}" alt="{{ image.name }}" loading="lazy">
                 </a>
-                <div class="image-info">
-                    <span class="image-name">{{ image.name }}</span>
-                </div>
             </div>
             {% endfor %}
         </div>
         {% else %}
         <div class="no-content">
-            <p>No photos found in this gallery.</p>
-            <p>Please check the gallery ID and try again.</p>
+            <p>Ingen bilder funnet.</p>
+            <p>Vennligst dobbeltsjekk kode.</p>
         </div>
         {% endif %}
     </div>
