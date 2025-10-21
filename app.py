@@ -59,23 +59,32 @@ def list_blobs_in_folder(gallery_id):
     
     prefix = f"{gallery_id}/"
     blobs = []
-    
-    for blob in container_client.list_blobs(name_starts_with=prefix):
+    container_blobs = container_client.list_blobs(name_starts_with=prefix)
+    for blob in container_blobs:
         # Get relative path within the gallery folder
         relative_name = blob.name[len(prefix):]
         print(f"Processing blob: {blob.name}, relative_name: {relative_name}")
         # Skip the zip file and any subdirectories for the gallery display
         if relative_name and not '/' in relative_name:
             # Determine if it's an image or the zip file
-            is_image = relative_name.lower().endswith('.jpg')
+            is_image = relative_name.lower().endswith('.jpg') and not relative_name.lower().startswith('tb_')
             is_zip = relative_name.lower().endswith('.zip')
             print(f"Found blob: {relative_name}, is_image: {is_image}, is_zip: {is_zip}")
             if is_image or is_zip:
-                print(get_blob_url_with_sas(blob.name))
+                if is_image:
+                    thumb_blob_name = f"{gallery_id}/tb_{relative_name}"
+                    if container_client.get_blob_client(thumb_blob_name).exists():
+                        thumb_url = get_blob_url_with_sas(thumb_blob_name)
+                    else:
+                        thumb_url = get_blob_url_with_sas(blob.name)
+                else:
+                    thumb_url = None
+
                 blob_info = {
                     'name': relative_name,
                     'full_name': blob.name,
                     'url': get_blob_url_with_sas(blob.name),
+                    'thumb_url': thumb_url,
                     'size': blob.size,
                     'is_image': is_image,
                     'is_zip': is_zip

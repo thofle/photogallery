@@ -50,6 +50,15 @@ body {
     transition: color 0.3s;
 }
 
+.warning {
+    display: inline-block;
+    margin-top: 10px;
+    color: #ffb86b;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s;
+}
+
 .back-link:hover {
     color: #ff8c00;
 }

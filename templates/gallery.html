@@ -10,8 +10,11 @@
     <div class="container">
         <div class="header">
             <h1>📸 Galleri: {{ gallery_id }}</h1>
+                    <div class="warning">
+            <p><span role="img" aria-label="advarsel">⚠️</span> Last ned bildene, de er kun tilgjengelige til og med <b>2. November 2025</b></p>
         </div>
-        
+        </div>
+
         {% if zip_file %}
         <div class="download-section">
             <a href="{{ zip_file.url }}" class="download-btn" download="{{ gallery_id }}.zip">
@@ -25,7 +28,7 @@
             {% for image in images %}
             <div class="gallery-item">
                 <a href="{{ image.url }}" target="_blank">
-                    <img src="{{ image.url }}" alt="{{ image.name }}" loading="lazy">
+                    <img src="{{ image.thumb_url }}" alt="{{ image.name }}" loading="lazy">
                 </a>
             </div>
             {% endfor %}
