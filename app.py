@@ -98,6 +98,14 @@ def list_blobs_in_folder(gallery_id):
     
     return images, zip_file
 
+def formatted_code(code):
+    code = code.upper()
+    return code[:4] + "-" + code[4:]
+
+def validate_code(code):
+    if len(code) != 8:
+        return False
+    return all(ch.isalnum() for ch in code)
 
 @app.route('/')
 def index():
@@ -111,6 +119,9 @@ def gallery(gallery_id):
     if not gallery_id:
         return redirect(url_for('index'))
     
+    if not validate_code(gallery_id):
+        return render_template('error.html', message="Invalid gallery ID format. Please use the format XXXX-XXXX.")
+    
     # remove non-alphanumeric characters
     gallery_id = ''.join(ch for ch in gallery_id if ch.isalnum())
     gallery_id = gallery_id.lower()
@@ -118,7 +129,7 @@ def gallery(gallery_id):
     images, zip_file = list_blobs_in_folder(gallery_id)
 
     return render_template('gallery.html', 
-                         gallery_id=gallery_id, 
+                         gallery_id=formatted_code(gallery_id), 
                          images=images, 
                          zip_file=zip_file)
 
